@@ -119,6 +119,12 @@
   ],
   "activities": [
     {
+      "id": "1776576156410",
+      "action": "Disbursement sent",
+      "detail": "$2 RLUSD → HID-0001-KE",
+      "time": "Just now"
+    },
+    {
       "id": "1776573304940",
       "action": "Disbursement sent",
       "detail": "$10 RLUSD → HID-0001-KE",

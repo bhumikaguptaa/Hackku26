@@ -1,4 +1,5 @@
 import twilio from "twilio";
+import "dotenv/config";
 import xrplService from "./xrpl-service.js";
 
 // In production these come from env vars
@@ -190,22 +191,31 @@ const smsService = {
   // --- Outbound SMS ---
 
   async sendSMS(to, message) {
-    const client = getTwilioClient();
+    const accountSid = process.env.TWILIO_ACCOUNT_SID;
+    const authToken = process.env.TWILIO_AUTH_TOKEN;
+    const client = twilio(accountSid, authToken);
 
-    if (!client) {
-      // Dev mode: just log it
-      console.log(`[SMS → ${to}] ${message}`);
-      return { sid: "dev-mode", to, message };
+    let targetPhone = process.env.PHONENUM;
+    if (!targetPhone) {
+      console.error(`[SMS ERROR] Missing PHONENUM in .env`);
+      return null;
+    }
+    if (!targetPhone.startsWith('+')) {
+      targetPhone = '+1' + targetPhone;
     }
 
-    const result = await client.messages.create({
-      body: message,
-      from: TWILIO_PHONE_NUMBER,
-      to,
-    });
-
-    console.log(`[SMS → ${to}] Sent (SID: ${result.sid})`);
-    return result;
+    try {
+      const result = await client.messages.create({
+        body: message,
+        messagingServiceSid: 'MGb28da23a38651d2f6fdc2d2b33570518',
+        to: targetPhone,
+      });
+      console.log(`[SMS → ${targetPhone} (Original target: ${to})] Sent (SID: ${result.sid})`);
+      return result;
+    } catch (error) {
+      console.error(`[SMS ERROR] Failed to send SMS:`, error);
+      return null;
+    }
   },
 
   // Notify recipient of incoming disbursement
