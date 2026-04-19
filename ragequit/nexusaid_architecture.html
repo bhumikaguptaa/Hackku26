@@ -1,0 +1,449 @@
+
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+.w{padding:1rem 0;font-family:var(--font-sans)}
+.tabs{display:flex;gap:6px;margin-bottom:1.5rem;flex-wrap:wrap}
+.tb{padding:6px 14px;border:0.5px solid var(--color-border-tertiary);border-radius:20px;font-size:13px;cursor:pointer;background:transparent;color:var(--color-text-secondary);transition:all .15s}
+.tb.on{background:var(--color-background-primary);color:var(--color-text-primary);border-color:var(--color-border-primary);font-weight:500}
+.pane{display:none}.pane.on{display:block}
+
+.hero{background:var(--color-background-primary);border:1.5px solid #1D9E75;border-radius:var(--border-radius-lg);padding:1.25rem;margin-bottom:1.25rem}
+.hero-title{font-size:20px;font-weight:500;margin-bottom:6px}
+.hero-sub{font-size:13px;color:var(--color-text-secondary);line-height:1.75;margin-bottom:12px}
+.tag-row{display:flex;flex-wrap:wrap;gap:6px}
+.tag{font-size:11px;font-weight:500;padding:3px 10px;border-radius:20px}
+.tg{background:#E1F5EE;color:#085041}
+.tp{background:#EEEDFE;color:#3C3489}
+.tb2{background:#E6F1FB;color:#0C447C}
+.ta{background:#FAEEDA;color:#633806}
+.tr{background:#FCEBEB;color:#791F1F}
+
+.lbl{font-size:11px;font-weight:500;color:var(--color-text-tertiary);letter-spacing:.05em;text-transform:uppercase;margin:1.25rem 0 .75rem}
+
+.alert{border-radius:var(--border-radius-lg);padding:1rem 1.1rem;margin-bottom:1rem}
+.al-g{background:#E1F5EE;border:0.5px solid #9FE1CB}
+.al-p{background:#EEEDFE;border:0.5px solid #CECBF6}
+.al-a{background:#FAEEDA;border:0.5px solid #FAC775}
+.al-r{background:#FCEBEB;border:0.5px solid #F7C1C1}
+.al-b{background:#E6F1FB;border:0.5px solid #B5D4F4}
+.al-title{font-size:13px;font-weight:500;margin-bottom:5px}
+.al-g .al-title{color:#085041}.al-p .al-title{color:#3C3489}
+.al-a .al-title{color:#633806}.al-r .al-title{color:#791F1F}.al-b .al-title{color:#0C447C}
+.al-body{font-size:13px;line-height:1.65}
+.al-g .al-body{color:#0F6E56}.al-p .al-body{color:#534AB7}
+.al-a .al-body{color:#854F0B}.al-r .al-body{color:#A32D2D}.al-b .al-body{color:#185FA5}
+
+.row{display:flex;gap:9px;align-items:flex-start;margin-bottom:10px}
+.dot{width:7px;height:7px;border-radius:50%;flex-shrink:0;margin-top:5px}
+.dg{background:#1D9E75}.da{background:#BA7517}.dr{background:#A32D2D}.dp{background:#534AB7}.db{background:#185FA5}
+.rt{font-size:13px;color:var(--color-text-secondary);line-height:1.65}
+.rt strong{color:var(--color-text-primary);font-weight:500}
+.rt code{font-family:var(--font-mono);font-size:11px;background:var(--color-background-secondary);padding:1px 5px;border-radius:3px;color:var(--color-text-primary)}
+
+.flow-step{background:var(--color-background-primary);border:0.5px solid var(--color-border-tertiary);border-radius:var(--border-radius-lg);padding:1rem;margin-bottom:8px;display:flex;gap:12px;align-items:flex-start}
+.step-num{width:32px;height:32px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:13px;font-weight:500;flex-shrink:0}
+.sn-g{background:#E1F5EE;color:#085041}
+.sn-p{background:#EEEDFE;color:#3C3489}
+.sn-b{background:#E6F1FB;color:#0C447C}
+.sn-a{background:#FAEEDA;color:#633806}
+.sn-r{background:#FCEBEB;color:#791F1F}
+.step-body{flex:1}
+.step-title{font-size:13px;font-weight:500;margin-bottom:3px}
+.step-sub{font-size:12px;color:var(--color-text-secondary);line-height:1.6}
+.step-tech{font-size:10px;font-weight:500;padding:1px 7px;border-radius:20px;display:inline-block;margin-top:5px}
+.st-xrpl{background:#E1F5EE;color:#085041}
+.st-sms{background:#FAEEDA;color:#633806}
+.st-web{background:#E6F1FB;color:#0C447C}
+.st-ai{background:#EEEDFE;color:#3C3489}
+.st-fiat{background:#FCEBEB;color:#791F1F}
+
+.comp-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:10px;margin-bottom:1rem}
+.comp-card{background:var(--color-background-primary);border:0.5px solid var(--color-border-tertiary);border-radius:var(--border-radius-lg);padding:1rem}
+.comp-title{font-size:13px;font-weight:500;margin-bottom:3px}
+.comp-role{font-size:10px;font-weight:500;padding:1px 7px;border-radius:20px;display:inline-block;margin-bottom:8px}
+.comp-item{font-size:12px;color:var(--color-text-secondary);line-height:1.7;padding:3px 0;border-bottom:0.5px solid var(--color-border-tertiary)}
+.comp-item:last-child{border-bottom:none}
+.comp-item strong{color:var(--color-text-primary);font-weight:500}
+
+.xrpl-box{background:var(--color-background-primary);border:0.5px solid var(--color-border-tertiary);border-radius:var(--border-radius-lg);padding:1rem;margin-bottom:10px}
+.xrpl-title{font-size:14px;font-weight:500;margin-bottom:8px}
+.xrpl-body{font-size:12px;color:var(--color-text-secondary);line-height:1.65}
+.xrpl-body code{font-family:var(--font-mono);font-size:11px;background:var(--color-background-secondary);padding:1px 5px;border-radius:3px;color:var(--color-text-primary)}
+
+.split-grid{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:1rem}
+.split-col{background:var(--color-background-primary);border:0.5px solid var(--color-border-tertiary);border-radius:var(--border-radius-lg);padding:1rem}
+.split-who{font-size:14px;font-weight:500;margin-bottom:2px}
+.split-role{font-size:11px;font-weight:500;margin-bottom:10px;color:#534AB7}
+.task-item{font-size:12px;color:var(--color-text-secondary);line-height:1.7;padding:5px 0;border-bottom:0.5px solid var(--color-border-tertiary)}
+.task-item:last-child{border-bottom:none}
+.task-item strong{color:var(--color-text-primary);font-weight:500}
+
+.demo-beat{display:flex;gap:10px;margin-bottom:14px;align-items:flex-start}
+.beat-ts{font-size:11px;font-weight:500;color:var(--color-text-tertiary);min-width:38px;padding-top:1px}
+.beat-body{flex:1}
+.beat-title{font-size:13px;font-weight:500;margin-bottom:3px}
+.beat-sub{font-size:12px;color:var(--color-text-secondary);line-height:1.6}
+</style>
+
+<div class="w">
+<div class="tabs">
+  <div class="tb on" onclick="sw('concept')">Concept</div>
+  <div class="tb" onclick="sw('flow')">Full Payment Flow</div>
+  <div class="tb" onclick="sw('xrpl')">XRPL Layer</div>
+  <div class="tb" onclick="sw('components')">Components</div>
+  <div class="tb" onclick="sw('split')">Work Split</div>
+  <div class="tb" onclick="sw('demo')">Demo Script</div>
+</div>
+
+<!-- CONCEPT -->
+<div class="pane on" id="pane-concept">
+  <div class="hero">
+    <div class="hero-title">NexusAID — Universal Humanitarian Payment Rails</div>
+    <div class="hero-sub">A donor anywhere in the world sends fiat in any currency. It enters XRPL, auto-converts to RLUSD via the native DEX, and lands in a recipient's Humanitarian ID wallet — accessible via a web dashboard or SMS, no smartphone required. NGOs manage disbursements through a dashboard. Recipients withdraw to local mobile money or cash out at partner agents.</div>
+    <div class="tag-row">
+      <span class="tag tg">Ripple / XRPL track</span>
+      <span class="tag tg">RLUSD stablecoin</span>
+      <span class="tag tp">Humanitarian ID</span>
+      <span class="tag tb2">SMS access</span>
+      <span class="tag ta">NGO dashboard</span>
+    </div>
+  </div>
+
+  <div class="alert al-g">
+    <div class="al-title">Why XRPL is perfect for this — not just allowed, actually ideal</div>
+    <div class="al-body">XRPL's native DEX handles cross-currency conversion in a single transaction with no slippage risk and near-zero fees (~$0.0002). Trust lines let you issue RLUSD to recipient wallets without them needing to hold XRP first. Payment paths automatically find the best conversion route. This is infrastructure built exactly for this use case — you're not forcing it, you're using it as designed.</div>
+  </div>
+
+  <div class="alert al-p">
+    <div class="al-title">The Humanitarian ID — the core innovation</div>
+    <div class="al-body">Every recipient gets a Humanitarian ID: a lightweight XRPL wallet created and custodied by the NGO, with a human-readable identifier (e.g. HID-2847-KE). The recipient doesn't need to understand crypto. They receive an SMS with their balance and a PIN. They can spend it at partner merchants, withdraw to M-Pesa, or receive additional disbursements. The ID is portable — it moves with the person, not the organization.</div>
+  </div>
+
+  <div class="alert al-b">
+    <div class="al-title">What makes this real-world ready for judges</div>
+    <div class="al-body">SMS access means recipients in low-connectivity regions with basic feature phones can use this. The NGO dashboard gives aid organizations actual operational tools — not just a wallet. RLUSD as the settlement currency removes volatility risk for recipients. And every disbursement is on-chain and auditable, which is exactly what institutional donors (governments, foundations) require before releasing funds.</div>
+  </div>
+
+  <div class="lbl">Three actors, three interfaces</div>
+  <div class="comp-grid">
+    <div class="comp-card">
+      <div class="comp-title">The Donor</div>
+      <span class="comp-role" style="background:#FCEBEB;color:#791F1F">Fiat in, anywhere</span>
+      <div class="comp-item">Goes to nexusaid.org/donate</div>
+      <div class="comp-item">Selects a cause / recipient region</div>
+      <div class="comp-item">Pays via credit card (Stripe on-ramp)</div>
+      <div class="comp-item">Receives a donation receipt with XRPL tx hash</div>
+      <div class="comp-item">Can track their donation reaching recipient</div>
+    </div>
+    <div class="comp-card">
+      <div class="comp-title">The NGO</div>
+      <span class="comp-role" style="background:#EEEDFE;color:#3C3489">Operational control</span>
+      <div class="comp-item">Web dashboard to manage recipient registry</div>
+      <div class="comp-item">Create / verify Humanitarian IDs in bulk</div>
+      <div class="comp-item">Set disbursement rules and schedules</div>
+      <div class="comp-item">View real-time fund flows and audit trail</div>
+      <div class="comp-item">Export reports for institutional donors</div>
+    </div>
+    <div class="comp-card">
+      <div class="comp-title">The Recipient</div>
+      <span class="comp-role" style="background:#E1F5EE;color:#085041">SMS or web access</span>
+      <div class="comp-item">Receives SMS: "Your NexusAID wallet received $12.50 RLUSD. Balance: $47.20. Reply BAL for balance, SEND to transfer."</div>
+      <div class="comp-item">Web dashboard for smartphone users</div>
+      <div class="comp-item">Withdraw to M-Pesa / local mobile money</div>
+      <div class="comp-item">Spend at NFC-enabled partner merchants</div>
+    </div>
+  </div>
+</div>
+
+<!-- FULL PAYMENT FLOW -->
+<div class="pane" id="pane-flow">
+  <div class="lbl">End-to-end flow — donor fiat to recipient RLUSD</div>
+
+  <div class="flow-step">
+    <div class="step-num sn-r">1</div>
+    <div class="step-body">
+      <div class="step-title">Donor visits donation portal and pays fiat</div>
+      <div class="step-sub">nexusaid.org/donate — Next.js frontend. Donor selects cause and amount ($10, $50, $100). Stripe Checkout handles card processing. On success, Stripe webhook fires to your backend with the confirmed fiat amount. Donor receives an email with a "Track your donation" link.</div>
+      <span class="step-tech st-fiat">Stripe</span>
+      <span class="step-tech st-web" style="margin-left:4px">Next.js</span>
+    </div>
+  </div>
+
+  <div class="flow-step">
+    <div class="step-num sn-r">2</div>
+    <div class="step-body">
+      <div class="step-title">Backend triggers XRPL on-ramp</div>
+      <div class="step-sub">Your Node.js backend receives the Stripe webhook. It calls a fiat-to-XRP on-ramp provider (Transak or similar — or simulate for the demo). The backend holds a "gateway wallet" on XRPL that receives the XRP equivalent of the fiat amount. This is the bridge between the traditional finance world and XRPL.</div>
+      <span class="step-tech st-xrpl">XRPL Gateway Wallet</span>
+      <span class="step-tech st-fiat" style="margin-left:4px">Transak API</span>
+    </div>
+  </div>
+
+  <div class="flow-step">
+    <div class="step-num sn-g">3</div>
+    <div class="step-body">
+      <div class="step-title">XRPL DEX auto-converts XRP → RLUSD</div>
+      <div class="step-sub">The backend submits an OfferCreate transaction on the XRPL native DEX to swap XRP for RLUSD. Because XRPL uses pathfinding, this happens atomically in one transaction — no separate swap step needed. The RLUSD lands directly in the NGO's distribution wallet. Fee: ~$0.0002. Settlement: 3–5 seconds.</div>
+      <span class="step-tech st-xrpl">XRPL DEX OfferCreate</span>
+      <span class="step-tech st-xrpl" style="margin-left:4px">RLUSD Trust Line</span>
+    </div>
+  </div>
+
+  <div class="flow-step">
+    <div class="step-num sn-g">4</div>
+    <div class="step-body">
+      <div class="step-title">NGO dashboard routes funds to recipient Humanitarian IDs</div>
+      <div class="step-sub">NGO operators see incoming funds in their dashboard in real-time via Socket.io. They can set automatic disbursement rules ("distribute equally to all active recipients in Kenya") or manually assign amounts. The dashboard submits XRPL Payment transactions from the NGO distribution wallet to each recipient's Humanitarian ID wallet.</div>
+      <span class="step-tech st-web">NGO Dashboard</span>
+      <span class="step-tech st-xrpl" style="margin-left:4px">XRPL Payment tx</span>
+    </div>
+  </div>
+
+  <div class="flow-step">
+    <div class="step-num sn-p">5</div>
+    <div class="step-body">
+      <div class="step-title">Recipient notified via SMS</div>
+      <div class="step-sub">When the XRPL payment to their wallet confirms, your backend listens for the ledger event and triggers a Twilio SMS to the recipient's registered phone number: "NexusAID: You received $12.50 RLUSD. New balance: $47.20. Reply BAL for balance, SEND [amount] [phone] to transfer, HELP for options." Works on any phone — no smartphone, no app, no internet needed.</div>
+      <span class="step-tech st-sms">Twilio SMS</span>
+      <span class="step-tech st-xrpl" style="margin-left:4px">XRPL ledger listener</span>
+    </div>
+  </div>
+
+  <div class="flow-step">
+    <div class="step-num sn-p">6</div>
+    <div class="step-body">
+      <div class="step-title">Recipient accesses funds via SMS commands or web</div>
+      <div class="step-sub">SMS: Reply "BAL" → backend queries XRPL and replies with balance. Reply "SEND 5 +254712345678" → backend executes XRPL payment from their wallet to the recipient's wallet. Web dashboard (for smartphone users): shows balance, transaction history, QR code for in-person payments at partner merchants. All wallet operations are custodied by the backend — recipient authenticates with PIN only.</div>
+      <span class="step-tech st-sms">Twilio SMS commands</span>
+      <span class="step-tech st-web" style="margin-left:4px">Next.js recipient portal</span>
+    </div>
+  </div>
+
+  <div class="flow-step">
+    <div class="step-num sn-a">7</div>
+    <div class="step-body">
+      <div class="step-title">Donor tracks their donation end-to-end</div>
+      <div class="step-sub">The "Track your donation" link shows the donor a live timeline: "Donation received → Converted to RLUSD on XRPL [tx hash] → Disbursed to recipient HID-2847-KE [tx hash] → Recipient notified." Every step is an XRPL transaction — immutable, auditable, publicly verifiable. This is the transparency story that wins institutional donor trust.</div>
+      <span class="step-tech st-web">Donation tracker page</span>
+      <span class="step-tech st-xrpl" style="margin-left:4px">XRPL tx audit trail</span>
+    </div>
+  </div>
+
+  <div class="alert al-g" style="margin-top:1rem">
+    <div class="al-title">For the demo: simulate the on-ramp, make everything else real</div>
+    <div class="al-body">A real Stripe → Transak → XRPL on-ramp takes time to set up. For the hackathon demo, simulate the fiat payment with a button that says "Donor pays $50" — this triggers a real XRPL testnet transaction from your gateway wallet. Everything from step 2 onward is real XRPL. Judges see real transaction hashes. The simulation is only the Stripe/fiat part.</div>
+  </div>
+</div>
+
+<!-- XRPL LAYER -->
+<div class="pane" id="pane-xrpl">
+  <div class="lbl">XRPL concepts you must implement</div>
+
+  <div class="xrpl-box">
+    <div class="xrpl-title">1. Wallets and account structure</div>
+    <div class="xrpl-body">Four wallet types on XRPL testnet:<br><br>
+    <strong>Gateway wallet</strong> — receives XRP from on-ramp, holds trust line to issue RLUSD. This is the "bank" of the system.<br><br>
+    <strong>NGO distribution wallet</strong> — receives RLUSD from gateway, disbursed to recipient wallets. NGO operators control this via the dashboard.<br><br>
+    <strong>Humanitarian ID wallets</strong> — one per recipient, created by the backend. Custodied (backend holds the secret key, encrypted). Funded with the XRPL minimum reserve (10 XRP) on creation.<br><br>
+    <strong>Donor tracking wallet</strong> — optional, used to give donors a unique address to track their specific contribution through the system.</div>
+  </div>
+
+  <div class="xrpl-box">
+    <div class="xrpl-title">2. Trust lines — how RLUSD works</div>
+    <div class="xrpl-body">RLUSD on XRPL requires trust lines. Every recipient wallet must establish a trust line to the RLUSD issuer (Ripple's official RLUSD issuer on testnet) before it can receive RLUSD. Your backend does this automatically when creating a Humanitarian ID wallet:<br><br>
+    <code>const trustSetTx = { TransactionType: "TrustSet", Account: recipientWallet.address, LimitAmount: { currency: "RLUSD", issuer: RLUSD_ISSUER, value: "10000" } }</code><br><br>
+    Sign and submit this immediately after wallet creation. The wallet can now receive RLUSD.</div>
+  </div>
+
+  <div class="xrpl-box">
+    <div class="xrpl-title">3. XRPL native DEX — XRP to RLUSD conversion</div>
+    <div class="xrpl-body">Use Payment with path-finding rather than OfferCreate for simplicity. XRPL will automatically route XRP through the DEX to deliver RLUSD:<br><br>
+    <code>const paymentTx = {</code><br>
+    <code>  TransactionType: "Payment",</code><br>
+    <code>  Account: gatewayWallet.address,</code><br>
+    <code>  Destination: ngoWallet.address,</code><br>
+    <code>  Amount: { currency: "RLUSD", issuer: RLUSD_ISSUER, value: "50.00" },</code><br>
+    <code>  SendMax: xrpToDrops("55"),  // max XRP willing to spend</code><br>
+    <code>  Paths: [...]  // from rippled pathfinding</code><br>
+    <code>}</code><br><br>
+    Use <code>client.request({ command: "ripple_path_find", ... })</code> to get paths before submitting.</div>
+  </div>
+
+  <div class="xrpl-box">
+    <div class="xrpl-title">4. Ledger subscription — real-time event listening</div>
+    <div class="xrpl-body">Subscribe to account transactions to trigger SMS notifications when payments arrive:<br><br>
+    <code>await client.request({ command: "subscribe", accounts: [recipientWallet.address] })</code><br><br>
+    <code>client.on("transaction", (tx) => {</code><br>
+    <code>  if (tx.transaction.Destination === recipientWallet.address) {</code><br>
+    <code>    sendSMS(recipientPhone, `You received ${amount} RLUSD`);</code><br>
+    <code>  }</code><br>
+    <code>})</code><br><br>
+    Subscribe to all active recipient wallet addresses on backend startup. This is how SMS notifications fire instantly when funds arrive.</div>
+  </div>
+
+  <div class="xrpl-box">
+    <div class="xrpl-title">5. npm package to use</div>
+    <div class="xrpl-body"><code>npm install xrpl</code> — the official Ripple SDK. Use <code>Client</code> for connections, <code>Wallet</code> for key management, and the transaction helpers for building Payment, TrustSet, and OfferCreate transactions. Connect to XRPL testnet: <code>wss://s.altnet.rippletest.net:51233</code>. Get testnet XRP from the faucet: <code>client.fundWallet()</code> — it gives you 1,000 test XRP instantly.</div>
+  </div>
+</div>
+
+<!-- COMPONENTS -->
+<div class="pane" id="pane-components">
+  <div class="lbl">Five components — what each one is and does</div>
+  <div class="comp-grid">
+    <div class="comp-card">
+      <div class="comp-title">1. Donation Portal</div>
+      <span class="comp-role" style="background:#FCEBEB;color:#791F1F">Next.js — new build</span>
+      <div class="comp-item"><strong>Landing page:</strong> cause selection, impact stats, "donate now" CTA</div>
+      <div class="comp-item"><strong>Donate page:</strong> amount selector, Stripe Checkout embed</div>
+      <div class="comp-item"><strong>Tracker page:</strong> /track/[donationId] — live timeline of donation journey with XRPL tx hashes</div>
+      <div class="comp-item"><strong>Socket.io:</strong> real-time update when donation converts and disburses</div>
+    </div>
+    <div class="comp-card">
+      <div class="comp-title">2. Backend API</div>
+      <span class="comp-role" style="background:#EEEDFE;color:#3C3489">Node.js / Express — core</span>
+      <div class="comp-item"><strong>Stripe webhook handler:</strong> receives payment confirmation, triggers XRPL flow</div>
+      <div class="comp-item"><strong>XRPL service:</strong> wallet creation, trust lines, payments, DEX swaps, ledger subscription</div>
+      <div class="comp-item"><strong>SMS service:</strong> Twilio webhook receiver, command parser (BAL / SEND / HELP), response sender</div>
+      <div class="comp-item"><strong>Humanitarian ID service:</strong> create, fund, and manage recipient wallets</div>
+      <div class="comp-item"><strong>Socket.io:</strong> real-time events to NGO dashboard and donor tracker</div>
+    </div>
+    <div class="comp-card">
+      <div class="comp-title">3. NGO Dashboard</div>
+      <span class="comp-role" style="background:#E6F1FB;color:#0C447C">Next.js — new build</span>
+      <div class="comp-item"><strong>Fund overview:</strong> incoming donations, total in treasury, disbursed to date</div>
+      <div class="comp-item"><strong>Recipient registry:</strong> table of all Humanitarian IDs, balances, last activity</div>
+      <div class="comp-item"><strong>Disburse funds:</strong> select recipients, enter amounts, confirm — submits XRPL payments</div>
+      <div class="comp-item"><strong>Audit log:</strong> every XRPL tx hash, timestamped, exportable</div>
+      <div class="comp-item"><strong>Live feed:</strong> Socket.io stream of incoming donations</div>
+    </div>
+    <div class="comp-card">
+      <div class="comp-title">4. SMS Gateway</div>
+      <span class="comp-role" style="background:#FAEEDA;color:#633806">Twilio — new service</span>
+      <div class="comp-item"><strong>Inbound:</strong> Twilio webhook → backend parses SMS command</div>
+      <div class="comp-item"><strong>BAL:</strong> query XRPL for wallet balance, reply with formatted amount</div>
+      <div class="comp-item"><strong>SEND [amt] [phone]:</strong> look up recipient by phone, submit XRPL Payment</div>
+      <div class="comp-item"><strong>HELP:</strong> reply with available commands</div>
+      <div class="comp-item"><strong>Outbound:</strong> notification SMS on any incoming payment to wallet</div>
+    </div>
+    <div class="comp-card">
+      <div class="comp-title">5. Recipient Web Portal</div>
+      <span class="comp-role" style="background:#E1F5EE;color:#085041">Next.js — lightweight</span>
+      <div class="comp-item"><strong>Login:</strong> enter Humanitarian ID + PIN (no wallet, no crypto knowledge needed)</div>
+      <div class="comp-item"><strong>Balance:</strong> current RLUSD balance in large text + local currency equivalent</div>
+      <div class="comp-item"><strong>History:</strong> list of all incoming and outgoing transactions</div>
+      <div class="comp-item"><strong>Send:</strong> transfer to another HID by phone number or ID</div>
+      <div class="comp-item"><strong>QR code:</strong> for in-person payments at partner merchants</div>
+    </div>
+  </div>
+
+  <div class="alert al-a">
+    <div class="al-title">Reuse from NexusPay / TapGuard</div>
+    <div class="al-body">The NFC payment flow from TapGuard can be the "partner merchant" piece — a recipient shows their QR code or taps their phone at a merchant terminal, which triggers an XRPL payment from their Humanitarian ID wallet. This is optional but if you have the NFC code, it's an extremely powerful demo addition — showing aid funds being spent in the real economy, not just sitting in a wallet.</div>
+  </div>
+</div>
+
+<!-- WORK SPLIT -->
+<div class="pane" id="pane-split">
+  <div class="split-grid">
+    <div class="split-col">
+      <div class="split-who">Person 1</div>
+      <div class="split-role">Backend + XRPL + SMS</div>
+      <div class="task-item"><strong>Hour 0–4:</strong> XRPL testnet setup — gateway wallet, NGO wallet, 2 test recipient wallets, trust lines for all</div>
+      <div class="task-item"><strong>Hour 4–10:</strong> XRPL service — wallet creation, Payment tx, trust line automation, ledger subscription</div>
+      <div class="task-item"><strong>Hour 10–16:</strong> Stripe webhook handler + simulated on-ramp trigger + DEX swap (XRP → RLUSD)</div>
+      <div class="task-item"><strong>Hour 16–22:</strong> Twilio SMS gateway — inbound webhook, BAL/SEND/HELP command parser, outbound notifications</div>
+      <div class="task-item"><strong>Hour 22–28:</strong> Socket.io events for real-time dashboard + donor tracker updates</div>
+      <div class="task-item"><strong>Hour 28–34:</strong> Integration testing, pre-stage demo wallets with balances</div>
+    </div>
+    <div class="split-col">
+      <div class="split-who">Person 2</div>
+      <div class="split-role">Frontend — all 3 web UIs</div>
+      <div class="task-item"><strong>Hour 0–6:</strong> Donation portal — landing page, cause selection, Stripe Checkout integration</div>
+      <div class="task-item"><strong>Hour 6–14:</strong> NGO dashboard — recipient registry table, fund overview stats, disburse UI</div>
+      <div class="task-item"><strong>Hour 14–20:</strong> Donation tracker page — timeline component with XRPL tx hash links</div>
+      <div class="task-item"><strong>Hour 20–26:</strong> Recipient web portal — login with HID + PIN, balance display, send form</div>
+      <div class="task-item"><strong>Hour 26–32:</strong> Wire Socket.io to all dashboards for real-time updates</div>
+      <div class="task-item"><strong>Hour 32–36:</strong> UI polish, demo rehearsal, README + submission</div>
+    </div>
+  </div>
+
+  <div class="alert al-g">
+    <div class="al-title">The handoff contract — agree at hour 0</div>
+    <div class="al-body">Person 1 exposes REST endpoints for all XRPL operations. Person 2 calls them from the frontend. Key endpoints: POST /api/disburse (NGO sends to recipient), GET /api/balance/:hidId (recipient balance), POST /api/donate/simulate (demo trigger), GET /api/donation/:id/track (donor tracker). Socket.io events: donation_received, conversion_complete, disbursement_sent, recipient_notified.</div>
+  </div>
+</div>
+
+<!-- DEMO SCRIPT -->
+<div class="pane" id="pane-demo">
+  <div class="alert al-p">
+    <div class="al-title">The demo structure — three perspectives, one story</div>
+    <div class="al-body">Show all three actors in sequence: donor pays → NGO disburses → recipient gets SMS. The XRPL tx hash connecting all three is your proof. Keep it under 3 minutes. The emotional moment is the SMS arriving — that's when judges feel the impact.</div>
+  </div>
+
+  <div class="demo-beat">
+    <div class="beat-ts">0:00</div>
+    <div class="beat-body">
+      <div class="beat-title">Open with the problem — one sentence</div>
+      <div class="beat-sub">"$170 billion in humanitarian aid is sent every year. On average, 30 cents of every dollar is lost to fees, intermediaries, and corruption before it reaches anyone." Show the donation portal homepage.</div>
+    </div>
+  </div>
+
+  <div class="demo-beat">
+    <div class="beat-ts">0:18</div>
+    <div class="beat-body">
+      <div class="beat-title">Act 1 — Donor pays fiat</div>
+      <div class="beat-sub">Click "Donate $50 to Kenya Relief." Stripe checkout appears. Click "Pay" (pre-filled card). Confirmation: "Your donation is on its way." Donation tracker page opens — shows Step 1 complete: "Payment received." Fee: $0.00 to intermediary.</div>
+    </div>
+  </div>
+
+  <div class="demo-beat">
+    <div class="beat-ts">0:40</div>
+    <div class="beat-body">
+      <div class="beat-title">Act 2 — XRPL converts and routes</div>
+      <div class="beat-sub">Tracker page updates live: "Converting to RLUSD on XRPL — tx: [hash]." Click the hash — opens XRPL testnet explorer showing the real transaction. "3 seconds. $0.0002 fee. $50 RLUSD now in the NGO's distribution wallet." Switch to NGO dashboard — funds appear in real-time.</div>
+    </div>
+  </div>
+
+  <div class="demo-beat">
+    <div class="beat-ts">1:05</div>
+    <div class="beat-body">
+      <div class="beat-title">Act 3 — NGO disburses to recipients</div>
+      <div class="beat-sub">On NGO dashboard, click "Disburse" — select 4 recipients in Kenya, $12.50 each. Click Confirm. Four XRPL payments submit simultaneously. Recipient table updates with new balances. Tracker page: "Disbursed to HID-2847-KE and 3 others — [tx hashes]."</div>
+    </div>
+  </div>
+
+  <div class="demo-beat">
+    <div class="beat-ts">1:35</div>
+    <div class="beat-body">
+      <div class="beat-title">Act 4 — Recipient gets SMS (the emotional moment)</div>
+      <div class="beat-sub">Show a real phone on screen. SMS arrives: "NexusAID: You received $12.50 RLUSD. Balance: $47.20. Reply BAL for balance." Live, real Twilio SMS on a real device. Let that land for 3 seconds. "No smartphone. No app. No bank account. Just a phone number."</div>
+    </div>
+  </div>
+
+  <div class="demo-beat">
+    <div class="beat-ts">2:00</div>
+    <div class="beat-body">
+      <div class="beat-title">Act 5 — Recipient checks balance by SMS</div>
+      <div class="beat-sub">Type "BAL" and send from the phone. Backend queries XRPL, replies in 2 seconds: "NexusAID Balance: $47.20 RLUSD (~KES 6,136). Last received: $12.50 from Kenya Relief Fund." Show the recipient web portal with the same balance — two access methods, one wallet.</div>
+    </div>
+  </div>
+
+  <div class="demo-beat">
+    <div class="beat-ts">2:30</div>
+    <div class="beat-body">
+      <div class="beat-title">Close</div>
+      <div class="beat-sub">"From a donor's credit card to a recipient's SMS — in under 60 seconds, for less than a cent in fees, with every step on-chain and auditable. That's NexusAID." Stop talking.</div>
+    </div>
+  </div>
+</div>
+</div>
+
+<script>
+function sw(name){
+  document.querySelectorAll('.pane').forEach(p=>p.classList.remove('on'));
+  document.querySelectorAll('.tb').forEach(t=>t.classList.remove('on'));
+  document.getElementById('pane-'+name).classList.add('on');
+  event.target.classList.add('on');
+}
+</script>
