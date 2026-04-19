@@ -1,23 +1,51 @@
+"use client";
+
+import { useState, useEffect } from "react";
+import { useParams } from "next/navigation";
 import Navbar from "../../components/Navbar";
 import Footer from "../../components/Footer";
 import TimelineStep from "../../components/TimelineStep";
 
-const mockTracking = {
-  donationId: "DON-2026-04-18-001", donor: "Anonymous Donor", amount: "$50.00",
-  cause: "Kenya Relief Fund", createdAt: "Apr 18, 2026 at 2:14 PM",
-  steps: [
-    { step: 1, title: "Payment received", subtitle: "Stripe confirmed your $50.00 donation to Kenya Relief Fund. Transaction processing initiated.", timestamp: "2:14:03 PM", txHash: undefined as string | undefined, status: "complete" as const },
-    { step: 2, title: "Converting to RLUSD on XRPL", subtitle: "Gateway wallet received XRP equivalent. XRPL native DEX auto-converting XRP to RLUSD via atomic swap. Fee: $0.0002.", timestamp: "2:14:06 PM", txHash: "A1B2C3D4E5F6A7B8C9D0E1F2A3B4C5D6E7F8A9B0C1D2E3F4A5B6C7D8E9F0A1B2", status: "complete" as const },
-    { step: 3, title: "Funds in NGO distribution wallet", subtitle: "$50.00 RLUSD now available in the Kenya Relief Fund distribution wallet. Ready for disbursement.", timestamp: "2:14:09 PM", txHash: "B2C3D4E5F6A7B8C9D0E1F2A3B4C5D6E7F8A9B0C1D2E3F4A5B6C7D8E9F0A1B2C3", status: "complete" as const },
-    { step: 4, title: "Disbursed to 4 recipients", subtitle: "NGO distributed $12.50 RLUSD each to HID-2847-KE, HID-3192-KE, HID-4501-KE, and HID-5678-KE.", timestamp: "2:15:22 PM", txHash: "C3D4E5F6A7B8C9D0E1F2A3B4C5D6E7F8A9B0C1D2E3F4A5B6C7D8E9F0A1B2C3D4", status: "active" as const },
-    { step: 5, title: "Recipients notified via SMS", subtitle: "SMS sent: \"NexusAID: You received $12.50 RLUSD. Balance: $47.20. Reply BAL for balance.\"", timestamp: undefined, txHash: undefined, status: "pending" as const },
-  ],
-};
+export default function TrackPage() {
+  const { donationId } = useParams() as { donationId: string };
+  const [tracking, setTracking] = useState<any>(null);
 
-export default async function TrackPage(props: PageProps<'/track/[donationId]'>) {
-  const { donationId } = await props.params;
-  // TODO: API CALL — GET /api/donation/[donationId]/track
-  const tracking = mockTracking;
+  useEffect(() => {
+    if (donationId === "demo-1" || !donationId) {
+      // Mock fallback
+      setTracking({
+        donationId: "demo-1", donor: "Anonymous Donor", amount: "$50.00",
+        cause: "Kenya Relief Fund", createdAt: new Date().toLocaleString(),
+        steps: [
+          { step: 1, title: "Payment received", subtitle: "Stripe confirmed your $50.00 donation. Transaction processing initiated.", timestamp: new Date().toLocaleTimeString(), txHash: undefined, status: "complete" as const },
+          { step: 2, title: "Converting to RLUSD on XRPL", subtitle: "Gateway wallet received XRP equivalent. XRPL native DEX auto-converting XRP to RLUSD via atomic swap.", timestamp: new Date().toLocaleTimeString(), txHash: "DEMO123456789", status: "complete" as const },
+          { step: 3, title: "Funds in NGO distribution wallet", subtitle: "$50.00 RLUSD now available in the distribution wallet. Ready for disbursement.", timestamp: new Date().toLocaleTimeString(), txHash: "DEMO987654321", status: "active" as const },
+        ]
+      });
+      return;
+    }
+
+    fetch(`http://localhost:3001/api/donations/${donationId}`)
+      .then(res => res.json())
+      .then(data => {
+        if (data.error) throw new Error(data.error);
+        setTracking({
+          donationId: data.txHash, 
+          donor: data.donorName, 
+          amount: `$${data.fiatAmount}`,
+          cause: data.cause || "General Fund", 
+          createdAt: new Date(data.timestamp).toLocaleString(),
+          steps: [
+            { step: 1, title: "Payment received", subtitle: `Confirmed your $${data.fiatAmount} donation to ${data.cause || "the cause"}. Transaction processing initiated.`, timestamp: new Date(data.timestamp).toLocaleTimeString(), txHash: undefined, status: "complete" as const },
+            { step: 2, title: "Converting to RLUSD on XRPL", subtitle: "Gateway wallet received XRP equivalent. XRPL native DEX auto-converting to RLUSD via atomic swap.", timestamp: new Date(data.timestamp).toLocaleTimeString(), txHash: data.txHash, status: "complete" as const },
+            { step: 3, title: "Funds in NGO distribution wallet", subtitle: `${data.rlusdAmount} RLUSD now available in the distribution wallet. Ready for disbursement.`, timestamp: new Date(data.timestamp).toLocaleTimeString(), txHash: data.txHash, status: "active" as const },
+          ]
+        });
+      })
+      .catch(console.error);
+  }, [donationId]);
+
+  if (!tracking) return <div className="min-h-screen bg-black text-white flex justify-center items-center">Locating XRPL record...</div>;
 
   return (
     <>
@@ -27,7 +55,7 @@ export default async function TrackPage(props: PageProps<'/track/[donationId]'>)
           <div className="flex items-center gap-3 mb-4">
             <div className="led led-on" />
             <span className="label-stamped text-accent">LIVE TRACKER</span>
-            <span className="font-mono text-xs text-text-muted/40">{donationId}</span>
+            <span className="font-mono text-xs text-text-muted/40">{donationId && donationId.length > 20 ? `${donationId.substring(0, 16)}...` : donationId}</span>
           </div>
           <h1 className="text-3xl font-extrabold tracking-tight text-text-primary text-embossed mb-3">Track Your Donation</h1>
           <p className="text-text-muted">
@@ -57,7 +85,7 @@ export default async function TrackPage(props: PageProps<'/track/[donationId]'>)
         <div className="animate-fade-in-up" style={{ animationDelay: "0.2s" }}>
           <h2 className="text-xl font-bold text-text-primary text-embossed mb-6">Donation Journey</h2>
           <div className="ml-1">
-            {tracking.steps.map((step, i) => (
+            {tracking.steps.map((step: any, i: number) => (
               <TimelineStep key={step.step} {...step} isLast={i === tracking.steps.length - 1} />
             ))}
           </div>

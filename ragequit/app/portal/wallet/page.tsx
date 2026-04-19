@@ -1,39 +1,124 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import Navbar from "../../components/Navbar";
 import Footer from "../../components/Footer";
 import TransactionRow from "../../components/TransactionRow";
 
-const mockWallet = {
-  hid: "HID-2847-KE", name: "Amara Njeri", balance: "47.20", currency: "RLUSD",
-  localCurrency: "KES", localAmount: "6,136",
-  lastReceived: { amount: "12.50", from: "Kenya Relief Fund", time: "2 minutes ago" },
-};
-
-const mockTransactions = [
-  { type: "incoming" as const, amount: "12.50", currency: "RLUSD", from: "Kenya Relief Fund", to: "HID-2847-KE", timestamp: "Apr 18, 2026 — 2:15 PM", txHash: "C3D4E5F6A7B8C9D0E1F2A3B4C5D6E7F8A9B0C1D2E3F4A5B6C7D8E9F0A1B2C3D4" },
-  { type: "outgoing" as const, amount: "5.00", currency: "RLUSD", from: "HID-2847-KE", to: "HID-3192-KE", timestamp: "Apr 17, 2026 — 10:30 AM", txHash: "D4E5F6A7B8C9D0E1F2A3B4C5D6E7F8A9B0C1D2E3F4A5B6C7D8E9F0A1B2C3D4E5" },
-  { type: "incoming" as const, amount: "25.00", currency: "RLUSD", from: "Kenya Relief Fund", to: "HID-2847-KE", timestamp: "Apr 15, 2026 — 3:45 PM", txHash: "E5F6A7B8C9D0E1F2A3B4C5D6E7F8A9B0C1D2E3F4A5B6C7D8E9F0A1B2C3D4E5F6" },
-  { type: "incoming" as const, amount: "14.70", currency: "RLUSD", from: "Emergency Food Aid", to: "HID-2847-KE", timestamp: "Apr 12, 2026 — 9:15 AM", txHash: "F6A7B8C9D0E1F2A3B4C5D6E7F8A9B0C1D2E3F4A5B6C7D8E9F0A1B2C3D4E5F6A7" },
-];
-
 export default function WalletPage() {
+  const [hid, setHid] = useState("");
+  const [wallet, setWallet] = useState<any>(null);
+  const [transactions, setTransactions] = useState<any[]>([]);
+  
   const [sendTo, setSendTo] = useState("");
   const [sendAmount, setSendAmount] = useState("");
   const [sending, setSending] = useState(false);
   const [sendSuccess, setSendSuccess] = useState(false);
   const [tab, setTab] = useState<"overview" | "send">("overview");
 
+  useEffect(() => {
+    if (typeof window !== "undefined") {
+      const savedHid = localStorage.getItem("nexus_hid");
+      if (savedHid) {
+        setHid(savedHid);
+        fetchWalletData(savedHid);
+      }
+    }
+  }, []);
+
+  const fetchWalletData = async (userHid: string) => {
+    try {
+      // Get all recipients to find our address
+      const recRes = await fetch("http://localhost:3001/api/recipients");
+      const recipients = await recRes.json();
+      const me = recipients.find((r: any) => r.hid === userHid);
+      
+      if (!me) return;
+
+      // Get balance
+      const balRes = await fetch(`http://localhost:3001/api/recipients/${userHid}/balance`);
+      const balData = await balRes.json();
+      
+      setWallet({
+        hid: me.hid,
+        name: me.name,
+        address: me.address,
+        balance: typeof balData.balance === "number" ? balData.balance.toFixed(2) : "0.00",
+        currency: "RLUSD",
+        localCurrency: "KES",
+        localAmount: (Number(balData.balance) * 130).toFixed(0), // approx KES
+      });
+
+      // Get transactions
+      const txRes = await fetch(`http://localhost:3001/api/transactions/${me.address}?limit=10`);
+      const txData = await txRes.json();
+      
+      const formattedTxs = txData.map((tx: any) => {
+        let amt = "0.00";
+        if (typeof tx.amount === "object") {
+          amt = Number(tx.amount.value).toFixed(2);
+        } else if (typeof tx.amount === "string") {
+          amt = (Number(tx.amount) / 1000000).toFixed(2); // XRP drops
+        }
+        
+        return {
+          type: tx.to === me.address ? "incoming" as const : "outgoing" as const,
+          amount: amt,
+          currency: tx.amount?.currency || "XRP",
+          from: tx.from === me.address ? me.hid : tx.from,
+          to: tx.to === me.address ? me.hid : tx.to,
+          timestamp: tx.date ? new Date(tx.date).toLocaleString() : "Unknown",
+          txHash: tx.hash
+        };
+      });
+      
+      setTransactions(formattedTxs);
+      
+    } catch (e) {
+      console.error(e);
+      // Fallback
+      setWallet({
+        hid: "HID-XXXX-XX", name: "Demo User", balance: "0.00", currency: "RLUSD",
+        localCurrency: "KES", localAmount: "0"
+      });
+    }
+  };
+
   const handleSend = async (e: React.FormEvent) => {
     e.preventDefault();
     setSending(true);
-    // TODO: API CALL — POST /api/recipient/send
-    await new Promise((resolve) => setTimeout(resolve, 2000));
+    
+    try {
+      const res = await fetch("http://localhost:3001/api/recipient/send", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          senderHid: hid,
+          targetHid: sendTo,
+          amount: Number(sendAmount)
+        })
+      });
+      
+      if (res.ok) {
+        setSendSuccess(true);
+        setTimeout(() => { 
+          setSendSuccess(false); 
+          setSendTo(""); 
+          setSendAmount(""); 
+          setTab("overview");
+          fetchWalletData(hid);
+        }, 3000);
+      } else {
+        alert("Transfer failed");
+      }
+    } catch (e) {
+      console.error(e);
+    }
+    
     setSending(false);
-    setSendSuccess(true);
-    setTimeout(() => { setSendSuccess(false); setSendTo(""); setSendAmount(""); setTab("overview"); }, 3000);
   };
+
+  if (!wallet) return <div className="min-h-screen bg-black text-white flex justify-center items-center">Loading...</div>;
 
   return (
     <>
@@ -46,8 +131,8 @@ export default function WalletPage() {
               <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2" /><circle cx="12" cy="7" r="4" />
             </svg>
           </div>
-          <h1 className="text-xl font-bold text-text-primary text-embossed">{mockWallet.name}</h1>
-          <p className="label-stamped mt-1">{mockWallet.hid}</p>
+          <h1 className="text-xl font-bold text-text-primary text-embossed">{wallet.name}</h1>
+          <p className="label-stamped mt-1">{wallet.hid}</p>
         </div>
 
         {/* Balance */}
@@ -55,14 +140,11 @@ export default function WalletPage() {
           <div className="absolute top-3 left-3 screw opacity-30" /><div className="absolute top-3 right-3 screw opacity-30" />
           <div className="absolute bottom-3 left-3 screw opacity-30" /><div className="absolute bottom-3 right-3 screw opacity-30" />
           <p className="label-stamped text-[#a8b2d1] mb-2">YOUR BALANCE</p>
-          <p className="text-5xl font-extrabold font-mono text-white tracking-tight" style={{ filter: "drop-shadow(0 2px 4px rgba(0,0,0,0.3))" }}>${mockWallet.balance}</p>
-          <p className="text-lg font-mono text-accent mt-1">{mockWallet.currency}</p>
+          <p className="text-5xl font-extrabold font-mono text-white tracking-tight" style={{ filter: "drop-shadow(0 2px 4px rgba(0,0,0,0.3))" }}>${wallet.balance}</p>
+          <p className="text-lg font-mono text-accent mt-1">{wallet.currency}</p>
           <div className="mt-3 inline-flex items-center gap-2 px-4 py-1.5 rounded-md bg-[#3d4c51] text-[#a8b2d1]" style={{ boxShadow: "inset 2px 2px 4px rgba(0,0,0,0.3), inset -2px -2px 4px rgba(255,255,255,0.05)" }}>
-            <span className="font-mono text-sm">approx. {mockWallet.localCurrency} {mockWallet.localAmount}</span>
+            <span className="font-mono text-sm">approx. {wallet.localCurrency} {wallet.localAmount}</span>
           </div>
-          <p className="font-mono text-xs text-[#636e72] mt-4">
-            Last received: ${mockWallet.lastReceived.amount} from {mockWallet.lastReceived.from} — {mockWallet.lastReceived.time}
-          </p>
         </div>
 
         {/* Tab switcher */}
@@ -79,7 +161,11 @@ export default function WalletPage() {
 
         {tab === "overview" ? (
           <div className="space-y-0 animate-fade-in">
-            {mockTransactions.map((tx, i) => <TransactionRow key={i} {...tx} />)}
+            {transactions.length === 0 ? (
+               <p className="text-center text-text-muted py-8">No transactions found.</p>
+            ) : (
+               transactions.map((tx, i) => <TransactionRow key={i} {...tx} />)
+            )}
           </div>
         ) : (
           <div className="rounded-2xl p-8 bg-chassis animate-fade-in relative" style={{ boxShadow: "var(--shadow-card)" }}>
@@ -108,7 +194,7 @@ export default function WalletPage() {
                       className="w-full pl-10 pr-4 py-4 rounded-xl bg-chassis font-mono text-2xl font-bold text-text-primary placeholder:text-text-muted/30 border-none outline-none"
                       style={{ boxShadow: "var(--shadow-recessed)" }} />
                   </div>
-                  <p className="font-mono text-xs text-text-muted mt-2">Available: ${mockWallet.balance} RLUSD</p>
+                  <p className="font-mono text-xs text-text-muted mt-2">Available: ${wallet.balance} RLUSD</p>
                 </div>
                 <button type="submit" disabled={sending}
                   className="btn-industrial btn-primary w-full py-4 text-sm rounded-xl disabled:opacity-50">

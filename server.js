@@ -2,6 +2,7 @@ import express from "express";
 import { createServer } from "http";
 import { Server as SocketIO } from "socket.io";
 import cors from "cors";
+import fs from "fs";
 import xrplService from "./src/services/xrpl-service.js";
 import onrampService from "./src/services/onramp-service.js";
 import smsService from "./src/services/sms-service.js";
@@ -18,6 +19,46 @@ app.use(express.urlencoded({ extended: true }));
 
 // --- Recipient store (in-memory, shared across services) ---
 const recipientStore = new Map(); // hid → { hid, name, phone, address, seed }
+const donationsStore = new Map(); // txHash → donation object
+const activityStore = []; // array of recent activity objects
+// --- Data Persistence Layer ---
+const DB_FILE = "./db.json";
+
+function loadDB() {
+  if (fs.existsSync(DB_FILE)) {
+    try {
+      const data = JSON.parse(fs.readFileSync(DB_FILE, "utf-8"));
+      if (data.recipients) {
+        recipientStore.clear();
+        data.recipients.forEach(([k, v]) => recipientStore.set(k, v));
+      }
+      if (data.donations) {
+        donationsStore.clear();
+        data.donations.forEach(([k, v]) => donationsStore.set(k, v));
+      }
+      if (data.activities) {
+        activityStore.length = 0;
+        data.activities.forEach(a => activityStore.push(a));
+      }
+      console.log(`[DB] Successfully loaded state from ${DB_FILE}`);
+    } catch (e) {
+      console.error("[DB] Failed to load db:", e);
+    }
+  }
+}
+
+function saveDB() {
+  try {
+    const data = {
+      recipients: Array.from(recipientStore.entries()),
+      donations: Array.from(donationsStore.entries()),
+      activities: activityStore
+    };
+    fs.writeFileSync(DB_FILE, JSON.stringify(data, null, 2), "utf-8");
+  } catch (e) {
+    console.error("[DB] Failed to save db:", e);
+  }
+}
 
 // --- REST API ---
 
@@ -66,6 +107,7 @@ app.post("/api/recipients", async (req, res) => {
   smsService.registerRecipient(phone, recipient);
 
   io.emit("recipient:new", { hid, name, phone, address: wallet.address });
+  saveDB();
 
   res.json({ hid, address: wallet.address });
 });
@@ -93,6 +135,16 @@ app.post("/api/disburse", async (req, res) => {
   io.emit("payment:disbursement", event);
   await smsService.notifyDisbursement(r.phone, amount, "NGO");
 
+  const activity = {
+    id: Date.now().toString(),
+    action: "Disbursement sent",
+    detail: `$${amount} RLUSD → ${hid}`,
+    time: "Just now"
+  };
+  activityStore.unshift(activity);
+  if (activityStore.length > 50) activityStore.pop();
+  saveDB();
+
   res.json(event);
 });
 
@@ -119,9 +171,22 @@ app.post("/api/donate", async (req, res) => {
     txHash: result.txHash,
     explorerUrl: result.explorerUrl,
     timestamp: result.timestamp,
+    cause: req.body.cause || "General Fund"
   };
 
+  donationsStore.set(result.txHash, event);
+
   io.emit("donation:received", event);
+
+  const activity = {
+    id: Date.now().toString(),
+    action: "Donation received",
+    detail: `$${result.fiatAmount} from ${result.donorName} → ${event.cause}`,
+    time: "Just now"
+  };
+  activityStore.unshift(activity);
+  if (activityStore.length > 50) activityStore.pop();
+  saveDB();
 
   res.json(event);
 });
@@ -129,7 +194,16 @@ app.post("/api/donate", async (req, res) => {
 // Get NGO dashboard data
 app.get("/api/dashboard", async (req, res) => {
   const ngoBalance = await xrplService.getBalance(xrplService.ngoWallet.address);
-  const gatewayData = await xrplService.getGatewayBalances();
+  let ngoXrpBalance = "0";
+  let gatewayXrpBalance = "0";
+  let gatewayData = { obligations: {} };
+  try {
+    ngoXrpBalance = await xrplService.getXRPBalance(xrplService.ngoWallet.address);
+    gatewayXrpBalance = await xrplService.getXRPBalance(xrplService.gatewayWallet.address);
+    gatewayData = await xrplService.getGatewayBalances();
+  } catch (e) {
+    console.warn("Failed to fetch extended dashboard balances:", e);
+  }
 
   const recipients = [];
   for (const [, r] of recipientStore) {
@@ -141,12 +215,15 @@ app.get("/api/dashboard", async (req, res) => {
 
   res.json({
     ngoBalance,
-    totalIssued: gatewayData.obligations.USD
-      ? parseFloat(gatewayData.obligations.USD)
-      : 0,
+    ngoXrpBalance,
+    gatewayXrpBalance,
+    totalIssued: gatewayData.obligations.RLUSD
+      ? parseFloat(gatewayData.obligations.RLUSD)
+      : (gatewayData.obligations.USD ? parseFloat(gatewayData.obligations.USD) : 0),
     totalDistributed,
     recipientCount: recipientStore.size,
     recipients,
+    recentActivity: activityStore.slice(0, 10),
   });
 });
 
@@ -157,6 +234,38 @@ app.get("/api/transactions/:address", async (req, res) => {
     parseInt(req.query.limit) || 20
   );
   res.json(history);
+});
+
+// Get donation by txHash
+app.get("/api/donations/:txHash", (req, res) => {
+  const donation = donationsStore.get(req.params.txHash);
+  if (!donation) return res.status(404).json({ error: "Donation not found" });
+  res.json(donation);
+});
+
+// Recipient sends RLUSD to another recipient
+app.post("/api/recipient/send", async (req, res) => {
+  const { senderHid, targetHid, amount } = req.body;
+  const sender = recipientStore.get(senderHid);
+
+  let target = recipientStore.get(targetHid);
+  if (!target && targetHid.startsWith("+")) {
+    for (const [, r] of recipientStore) {
+      if (r.phone === targetHid) {
+        target = r; break;
+      }
+    }
+  }
+
+  if (!sender || !target) return res.status(404).json({ error: "Sender or target not found" });
+
+  try {
+    const senderWallet = xrplService.walletFromSeed(sender.seed);
+    const result = await xrplService.sendPayment(senderWallet, target.address, String(amount));
+    res.json({ success: true, txHash: result.hash });
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
 });
 
 // Twilio SMS webhook
@@ -208,6 +317,7 @@ xrplService.on("ledger", (ledger) => {
 // --- Startup ---
 
 async function startServer(port = 3001) {
+  loadDB();
   await xrplService.connect();
   xrplService.loadWallets("./wallets.json");
 
@@ -229,3 +339,8 @@ async function startServer(port = 3001) {
 
 export { app, io, httpServer, recipientStore, startServer };
 export default startServer;
+
+import { fileURLToPath } from 'url';
+if (process.argv[1] === fileURLToPath(import.meta.url)) {
+  startServer().catch(console.error);
+}

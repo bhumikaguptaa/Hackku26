@@ -1,18 +1,13 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 
 const mockRecipients = [
-  { hid: "HID-2847-KE", name: "Amara Njeri", balance: "$47.20", region: "Nairobi" },
-  { hid: "HID-3192-KE", name: "John Ochieng", balance: "$32.50", region: "Mombasa" },
-  { hid: "HID-4501-KE", name: "Fatima Hassan", balance: "$18.00", region: "Kisumu" },
-  { hid: "HID-5678-KE", name: "Amina Osei", balance: "$12.50", region: "Nairobi" },
-  { hid: "HID-6789-SY", name: "Omar Al-Rashid", balance: "$65.00", region: "Aleppo" },
-  { hid: "HID-7890-SY", name: "Layla Khoury", balance: "$0.00", region: "Damascus" },
-  { hid: "HID-8901-BD", name: "Rahim Ahmed", balance: "$22.80", region: "Dhaka" },
+  { hid: "HID-2847-KE", name: "Amara Njeri (Demo)", balance: "$47.20", region: "Global" }
 ];
 
 export default function DisbursePage() {
+  const [recipients, setRecipients] = useState(mockRecipients);
   const [selected, setSelected] = useState<Set<string>>(new Set());
   const [mode, setMode] = useState<"equal" | "custom">("equal");
   const [totalAmount, setTotalAmount] = useState("50");
@@ -20,12 +15,49 @@ export default function DisbursePage() {
   const [showConfirm, setShowConfirm] = useState(false);
   const [processing, setProcessing] = useState(false);
   const [success, setSuccess] = useState(false);
+  const [disbursementResults, setDisbursementResults] = useState<any[]>([]);
+  
+  useEffect(() => {
+    fetch("http://localhost:3001/api/dashboard")
+      .then(res => res.json())
+      .then(data => {
+        if (data.recipients && data.recipients.length > 0) {
+          setRecipients(data.recipients.map((r: any) => ({
+            hid: r.hid,
+            name: r.name,
+            balance: `$${Number(r.balance).toFixed(2)}`,
+            region: "Global"
+          })));
+        }
+      })
+      .catch(console.error);
+  }, []);
 
   const toggleRecipient = (hid: string) => { setSelected((p) => { const n = new Set(p); if (n.has(hid)) n.delete(hid); else n.add(hid); return n; }); };
-  const selectAll = () => { if (selected.size === mockRecipients.length) setSelected(new Set()); else setSelected(new Set(mockRecipients.map((r) => r.hid))); };
+  const selectAll = () => { if (selected.size === recipients.length) setSelected(new Set()); else setSelected(new Set(recipients.map((r) => r.hid))); };
   const perRecipient = mode === "equal" && selected.size > 0 ? (Number(totalAmount) / selected.size).toFixed(2) : "0.00";
 
-  const handleDisburse = async () => { setProcessing(true); await new Promise((r) => setTimeout(r, 2500)); setProcessing(false); setSuccess(true); };
+  const handleDisburse = async () => { 
+    setProcessing(true); 
+    try {
+      const promises = Array.from(selected).map(async (hid) => {
+        const amt = mode === "equal" ? Number(perRecipient) : Number(customAmounts[hid] || 0);
+        const res = await fetch("http://localhost:3001/api/disburse", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ hid, amount: amt })
+        });
+        return await res.json();
+      });
+      const results = await Promise.all(promises);
+      setDisbursementResults(results);
+      setSuccess(true);
+    } catch (e) {
+      console.error(e);
+      alert("Error sending disbursement");
+    }
+    setProcessing(false); 
+  };
 
   if (success) {
     return (
@@ -39,15 +71,15 @@ export default function DisbursePage() {
         </p>
         <div className="rounded-2xl p-6 w-full max-w-md bg-chassis relative space-y-3" style={{ boxShadow: "var(--shadow-card)" }}>
           <div className="absolute top-3 left-3 screw" /><div className="absolute top-3 right-3 screw" />
-          {Array.from(selected).map((hid, i) => (
-            <div key={hid} className="flex items-center justify-between border-b border-recessed/30 last:border-b-0 pb-2 last:pb-0">
-              <span className="font-mono text-sm font-bold text-accent">{hid}</span>
-              <a href={`https://testnet.xrpl.org/transactions/MOCK${i}HASH${hid.replace(/-/g, "")}`} target="_blank" rel="noopener noreferrer"
-                className="font-mono text-xs text-text-muted hover:text-accent transition-colors">View tx</a>
+          {disbursementResults.map((result) => (
+            <div key={result.hid} className="flex items-center justify-between border-b border-recessed/30 last:border-b-0 pb-2 last:pb-0">
+              <span className="font-mono text-sm font-bold text-accent">{result.hid}</span>
+              <a href={`https://testnet.xrpl.org/transactions/${result.txHash}`} target="_blank" rel="noopener noreferrer"
+                className="font-mono text-xs text-text-muted hover:text-accent transition-colors">View tx {result.txHash ? result.txHash.substring(0, 8) + '...' : ''}</a>
             </div>
           ))}
         </div>
-        <button onClick={() => { setSuccess(false); setSelected(new Set()); setShowConfirm(false); }}
+        <button onClick={() => { setSuccess(false); setSelected(new Set()); setShowConfirm(false); setDisbursementResults([]); }}
           className="btn-industrial btn-secondary px-8 py-3 text-sm rounded-xl mt-8">New Disbursement</button>
       </div>
     );
@@ -79,7 +111,7 @@ export default function DisbursePage() {
 
       <div className="flex items-center justify-between">
         <button onClick={selectAll} className="text-sm font-semibold text-accent hover:underline transition-colors">
-          {selected.size === mockRecipients.length ? "Deselect All" : "Select All"}
+          {selected.size === recipients.length ? "Deselect All" : "Select All"}
         </button>
         <span className="label-stamped">{selected.size} SELECTED</span>
       </div>
@@ -100,7 +132,7 @@ export default function DisbursePage() {
               </tr>
             </thead>
             <tbody>
-              {mockRecipients.map((r) => (
+              {recipients.map((r) => (
                 <tr key={r.hid} onClick={() => toggleRecipient(r.hid)}
                   className={`cursor-pointer border-t border-recessed/30 transition-colors ${selected.has(r.hid) ? "bg-accent/5" : "hover:bg-recessed/20"}`}>
                   <td className="px-5 py-4">

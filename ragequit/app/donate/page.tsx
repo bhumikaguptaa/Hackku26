@@ -12,19 +12,7 @@ const causes = [
     description: "Providing food, shelter, and medical supplies to families displaced by drought in northern Kenya.",
     raised: 34200, goal: 50000, color: "#10b981",
     icon: <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="10" /><line x1="2" y1="12" x2="22" y2="12" /><path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z" /></svg>,
-  },
-  {
-    id: "syria-medical", title: "Syria Medical Aid", region: "MIDDLE EAST",
-    description: "Funding emergency medical care and supplies for hospitals in conflict-affected regions of Syria.",
-    raised: 78500, goal: 100000, color: "#3b82f6",
-    icon: <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M22 12h-4l-3 9L9 3l-3 9H2" /></svg>,
-  },
-  {
-    id: "bangladesh-flood", title: "Bangladesh Flood Relief", region: "SOUTH ASIA",
-    description: "Supporting families impacted by severe flooding with clean water, food packages, and temporary housing.",
-    raised: 12800, goal: 75000, color: "#8b5cf6",
-    icon: <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z" /></svg>,
-  },
+  }
 ];
 
 const presetAmounts = [10, 25, 50, 100];
@@ -45,9 +33,25 @@ export default function DonatePage() {
   const handleDonate = async () => {
     if (!canDonate) return;
     setProcessing(true);
-    // TODO: API CALL — POST /api/donate/simulate
-    await new Promise((resolve) => setTimeout(resolve, 2000));
-    router.push("/track/demo-1");
+    
+    try {
+      const response = await fetch("http://localhost:3001/api/donate", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          donorName: name || "Anonymous Donor",
+          fiatAmount: effectiveAmount,
+          fiatCurrency: "USD",
+          cause: causes.find(c => c.id === selectedCause)?.title || "General Fund"
+        }),
+      });
+      const data = await response.json();
+      
+      router.push(`/track/${data.txHash || "demo-1"}`);
+    } catch (e) {
+      console.error(e);
+      setProcessing(false);
+    }
   };
 
   return (

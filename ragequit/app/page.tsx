@@ -27,9 +27,9 @@ export default function LandingPage() {
                   <Link href="/donate" className="btn-industrial btn-primary px-8 py-4 text-sm rounded-xl">
                     Donate Now
                   </Link>
-                  <Link href="/track/demo-1" className="btn-industrial btn-secondary px-8 py-4 text-sm rounded-xl">
+                  {/* <Link href="/track/demo-1" className="btn-industrial btn-secondary px-8 py-4 text-sm rounded-xl">
                     Track a Donation
-                  </Link>
+                  </Link> */}
                 </div>
               </div>
 

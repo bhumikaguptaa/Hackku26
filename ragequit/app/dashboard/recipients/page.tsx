@@ -1,22 +1,48 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 
 const mockRecipients = [
-  { hid: "HID-2847-KE", name: "Amara Njeri", phone: "+254 712 345 678", balance: "$47.20", lastActivity: "2 min ago", status: "Active", region: "Nairobi, Kenya" },
-  { hid: "HID-3192-KE", name: "John Ochieng", phone: "+254 723 456 789", balance: "$32.50", lastActivity: "5 min ago", status: "Active", region: "Mombasa, Kenya" },
-  { hid: "HID-4501-KE", name: "Fatima Hassan", phone: "+254 734 567 890", balance: "$18.00", lastActivity: "1 hour ago", status: "Active", region: "Kisumu, Kenya" },
-  { hid: "HID-5678-KE", name: "Amina Osei", phone: "+254 745 678 901", balance: "$12.50", lastActivity: "1 hour ago", status: "Active", region: "Nairobi, Kenya" },
-  { hid: "HID-6789-SY", name: "Omar Al-Rashid", phone: "+963 912 345 678", balance: "$65.00", lastActivity: "3 hours ago", status: "Active", region: "Aleppo, Syria" },
-  { hid: "HID-7890-SY", name: "Layla Khoury", phone: "+963 923 456 789", balance: "$0.00", lastActivity: "2 days ago", status: "Pending", region: "Damascus, Syria" },
-  { hid: "HID-8901-BD", name: "Rahim Ahmed", phone: "+880 1712 345 678", balance: "$22.80", lastActivity: "5 hours ago", status: "Active", region: "Dhaka, Bangladesh" },
-  { hid: "HID-9012-BD", name: "Nasreen Begum", phone: "+880 1823 456 789", balance: "$8.50", lastActivity: "1 day ago", status: "Inactive", region: "Chittagong, Bangladesh" },
+  { hid: "HID-2847-KE", name: "Amara Njeri (Demo)", phone: "+254 712 345 678", balance: "$47.20", lastActivity: "Just now", status: "Active", region: "Nairobi, Kenya" }
 ];
 
 export default function RecipientsPage() {
   const [search, setSearch] = useState("");
   const [statusFilter, setStatusFilter] = useState("All");
-  const filtered = mockRecipients.filter((r) => {
+  const [recipients, setRecipients] = useState(mockRecipients);
+
+  useEffect(() => {
+    async function loadData() {
+      try {
+        const [dashRes, recRes] = await Promise.all([
+          fetch("http://localhost:3001/api/dashboard"),
+          fetch("http://localhost:3001/api/recipients")
+        ]);
+        const dashData = await dashRes.json();
+        const recData = await recRes.json();
+        
+        const merged = recData.map((r: any) => {
+          const dashR = dashData.recipients.find((d: any) => d.hid === r.hid) || { balance: 0 };
+          return {
+            hid: r.hid,
+            name: r.name,
+            phone: r.phone,
+            balance: `$${Number(dashR.balance).toFixed(2)}`,
+            lastActivity: "Active",
+            status: "Active",
+            region: "Global"
+          };
+        });
+        
+        if (merged.length > 0) setRecipients(merged);
+      } catch (err) {
+        console.error("Failed to load recipients", err);
+      }
+    }
+    loadData();
+  }, []);
+
+  const filtered = recipients.filter((r) => {
     const matchesSearch = r.name.toLowerCase().includes(search.toLowerCase()) || r.hid.toLowerCase().includes(search.toLowerCase()) || r.region.toLowerCase().includes(search.toLowerCase());
     const matchesStatus = statusFilter === "All" || r.status === statusFilter;
     return matchesSearch && matchesStatus;

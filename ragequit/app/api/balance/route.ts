@@ -1,7 +1,11 @@
-// TODO: API CALL — GET /api/balance/:hidId
-// This route will be implemented by the backend teammate
-// Expected: Accepts HID as query param, returns { hid, balance, currency, localCurrency, localAmount }
-
-export async function GET() {
-  return Response.json({ message: "Not implemented — awaiting backend" });
+export async function GET(request: Request) {
+  const url = new URL(request.url);
+  const hidId = url.pathname.split("/").pop();
+  try {
+    const res = await fetch(`http://localhost:3001/api/recipients/${hidId}/balance`);
+    const data = await res.json();
+    return Response.json(data);
+  } catch (e) {
+    return Response.json({ error: "Failed to connect to backend" }, { status: 500 });
+  }
 }

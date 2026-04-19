@@ -16,13 +16,27 @@ export default function RecipientLogin() {
     e.preventDefault();
     setError("");
     setLoading(true);
-    // TODO: API CALL — POST /api/recipient/login
-    await new Promise((resolve) => setTimeout(resolve, 1000));
-    if (hid.toLowerCase().startsWith("hid-") && pin.length === 4) {
-      router.push("/portal/wallet");
-    } else {
-      setError("Invalid Humanitarian ID or PIN. Please try again.");
+    
+    try {
+      const response = await fetch("http://localhost:3001/api/recipients");
+      const recipients = await response.json();
+      
+      const found = recipients.find((r: any) => r.hid.toLowerCase() === hid.toLowerCase());
+      
+      if (found && pin.length === 4) {
+        // Just storing ID in local storage for demo purposes
+        if (typeof window !== "undefined") {
+          localStorage.setItem("nexus_hid", found.hid);
+        }
+        router.push("/portal/wallet");
+      } else {
+        setError("Invalid Humanitarian ID or PIN. Please try again.");
+      }
+    } catch (e) {
+      console.error(e);
+      setError("Failed to connect to backend server.");
     }
+    
     setLoading(false);
   };
 

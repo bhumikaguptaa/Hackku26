@@ -1,26 +1,78 @@
+"use client";
+
+import { useState, useEffect } from "react";
 import StatsCard from "../components/StatsCard";
 import Link from "next/link";
+import { io } from "socket.io-client";
 
-const recentActivity = [
-  { id: 1, action: "Donation received", detail: "$50.00 from Anonymous Donor → Kenya Relief", time: "2 min ago" },
-  { id: 2, action: "Disbursement sent", detail: "$12.50 RLUSD → HID-2847-KE", time: "5 min ago" },
-  { id: 3, action: "Disbursement sent", detail: "$12.50 RLUSD → HID-3192-KE", time: "5 min ago" },
-  { id: 4, action: "New recipient registered", detail: "HID-5678-KE — Amina Osei, Nairobi", time: "1 hour ago" },
-  { id: 5, action: "Donation received", detail: "$100.00 from Jane D. → Syria Medical Aid", time: "3 hours ago" },
+const initialActivity = [
+  { id: 1, action: "Donation received", detail: "$50.00 from Anonymous Donor → Kenya Relief", time: "Just now" }
 ];
 
 export default function DashboardOverview() {
+  const [stats, setStats] = useState({
+    totalDonated: 0,
+    ngoBalance: 0,
+    totalDisbursed: 0,
+    recipientCount: 0,
+    ngoXrpBalance: "0",
+    gatewayXrpBalance: "0"
+  });
+  const [activities, setActivities] = useState(initialActivity);
+
+  useEffect(() => {
+    const fetchDashboard = async () => {
+      try {
+        const res = await fetch("http://localhost:3001/api/dashboard");
+        const data = await res.json();
+        setStats({
+          totalDonated: data.totalIssued,
+          ngoBalance: data.ngoBalance,
+          totalDisbursed: data.totalDistributed,
+          recipientCount: data.recipientCount,
+          ngoXrpBalance: data.ngoXrpBalance || "0",
+          gatewayXrpBalance: data.gatewayXrpBalance || "0"
+        });
+        if (data.recentActivity && data.recentActivity.length > 0) {
+          setActivities(data.recentActivity);
+        }
+      } catch (err) {
+        console.error(err);
+      }
+    };
+
+    fetchDashboard();
+
+    const socket = io("http://localhost:3001");
+
+    socket.on("donation:received", () => {
+      fetchDashboard();
+    });
+
+    socket.on("payment:disbursement", () => {
+      fetchDashboard();
+    });
+
+    return () => {
+      socket.disconnect();
+    };
+  }, []);
+
   return (
     <div className="space-y-8">
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 stagger">
-        <StatsCard label="TOTAL DONATED" value="$12,450" change="+$2,150 today" trend="up"
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-6 gap-6 stagger">
+        <StatsCard label="TOTAL DONATED" value={`$${stats.totalDonated.toFixed(2)}`} change="Lifetime" trend="up"
           icon={<svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><polyline points="23 6 13.5 15.5 8.5 10.5 1 18" /><polyline points="17 6 23 6 23 12" /></svg>} />
-        <StatsCard label="TREASURY BALANCE" value="$3,280" change="RLUSD" trend="neutral"
+        <StatsCard label="NGO RLUSD" value={`$${stats.ngoBalance.toFixed(2)}`} change="Treasury" trend="neutral"
           icon={<svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><rect x="2" y="7" width="20" height="14" rx="2" ry="2" /><path d="M16 21V5a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v16" /></svg>} />
-        <StatsCard label="TOTAL DISBURSED" value="$9,170" change="+$650 today" trend="up"
+        <StatsCard label="TOTAL DISBURSED" value={`$${stats.totalDisbursed.toFixed(2)}`} change="Lifetime" trend="up"
           icon={<svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M12 2v20M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6" /></svg>} />
-        <StatsCard label="ACTIVE RECIPIENTS" value="47" change="+3 this week" trend="up"
+        <StatsCard label="ACTIVE RECIPIENTS" value={stats.recipientCount.toString()} change="Registered" trend="up"
           icon={<svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2" /><circle cx="9" cy="7" r="4" /></svg>} />
+        <StatsCard label="NGO XRP" value={`${Number(stats.ngoXrpBalance).toFixed(0)} Ξ`} change="Gas Reserve" trend="neutral"
+          icon={<svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="10" /><path d="M16 8l-8 8" /><path d="M8 8l8 8" /></svg>} />
+        <StatsCard label="GATEWAY XRP" value={`${Number(stats.gatewayXrpBalance).toFixed(0)} Ξ`} change="Donor Reserve" trend="neutral"
+          icon={<svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="10" /><path d="M16 8l-8 8" /><path d="M8 8l8 8" /></svg>} />
       </div>
 
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
@@ -65,7 +117,7 @@ export default function DashboardOverview() {
             </div>
           </div>
           <div className="space-y-1">
-            {recentActivity.map((item) => (
+            {activities.map((item) => (
               <div key={item.id} className="flex items-start gap-3 px-3 py-3 rounded-lg hover:bg-recessed/30 transition-colors">
                 <span className="w-2 h-2 rounded-full bg-accent mt-1.5 flex-shrink-0" />
                 <div className="flex-1 min-w-0">

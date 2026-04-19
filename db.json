@@ -1,0 +1,152 @@
+{
+  "recipients": [
+    [
+      "HID-0001-KE",
+      {
+        "hid": "HID-0001-KE",
+        "name": "Amina Osei",
+        "phone": "+254700100001",
+        "address": "rQGe85tgapbqBPXqL68cQPrL81ifrcw8cT",
+        "seed": "sEdSVV5Jrqj54dZXY3UZzYo6ijAFXet"
+      }
+    ],
+    [
+      "HID-0002-KE",
+      {
+        "hid": "HID-0002-KE",
+        "name": "Joseph Kamau",
+        "phone": "+254700100002",
+        "address": "rKr7VjEsEhaLWUCNXUSbrxudVwUnPBuyJ6",
+        "seed": "sEd7EFHRRvwhK9niq3FZfDrrRhRy8UV"
+      }
+    ],
+    [
+      "HID-0003-KE",
+      {
+        "hid": "HID-0003-KE",
+        "name": "Fatima Hassan",
+        "phone": "+254700100003",
+        "address": "rJYtowBF1SLBAt745odxQVzR9Hoqf4dguk",
+        "seed": "sEd7zTw56n8WZgWpCY8uMbeCdf34dvY"
+      }
+    ],
+    [
+      "HID-0004-KE",
+      {
+        "hid": "HID-0004-KE",
+        "name": "David Ochieng",
+        "phone": "+254700100004",
+        "address": "rNanAoao34PJyVdfMoWottzYWPRv3XTKhj",
+        "seed": "sEdSChVwme4MAY1qqLegttDWTJydVkR"
+      }
+    ],
+    [
+      "HID-0005-KE",
+      {
+        "hid": "HID-0005-KE",
+        "name": "Grace Wanjiku",
+        "phone": "+254700100005",
+        "address": "rGnanmLEGkneh3HmdqrHTUgXtEtuvWavo",
+        "seed": "sEd7Ju479D2hTMmsMhyv6LsJAF247iN"
+      }
+    ]
+  ],
+  "donations": [
+    [
+      "316546FC96DFA5D0B08AB2B31B7B04493C693299470EDDC76FEDA3F929B187D0",
+      {
+        "type": "donation",
+        "donorName": "UNHCR Grant",
+        "fiatAmount": 5000,
+        "fiatCurrency": "USD",
+        "rlusdAmount": 5000,
+        "exchangeRate": 1,
+        "ngoBalance": 35834,
+        "txHash": "316546FC96DFA5D0B08AB2B31B7B04493C693299470EDDC76FEDA3F929B187D0",
+        "explorerUrl": "https://testnet.xrpl.org/transactions/316546FC96DFA5D0B08AB2B31B7B04493C693299470EDDC76FEDA3F929B187D0",
+        "timestamp": "2026-04-19T04:03:53.115Z",
+        "cause": "Global Relief"
+      }
+    ],
+    [
+      "18769C17D4E360C132A5FBD9E14760774929E5060176FD94246D41869F3DC4AC",
+      {
+        "type": "donation",
+        "donorName": "Oxfam Partnership",
+        "fiatAmount": 2500,
+        "fiatCurrency": "EUR",
+        "rlusdAmount": 2700,
+        "exchangeRate": 1.08,
+        "ngoBalance": 38534,
+        "txHash": "18769C17D4E360C132A5FBD9E14760774929E5060176FD94246D41869F3DC4AC",
+        "explorerUrl": "https://testnet.xrpl.org/transactions/18769C17D4E360C132A5FBD9E14760774929E5060176FD94246D41869F3DC4AC",
+        "timestamp": "2026-04-19T04:04:00.191Z",
+        "cause": "Kenya Relief Fund"
+      }
+    ],
+    [
+      "62646F8BF7D0D89F3E7CB14C4A4657FD13752E1D24BABC566591DFD8DB4042CF",
+      {
+        "type": "donation",
+        "donorName": "Jane Smith",
+        "fiatAmount": 150,
+        "fiatCurrency": "GBP",
+        "rlusdAmount": 189,
+        "exchangeRate": 1.26,
+        "ngoBalance": 38723,
+        "txHash": "62646F8BF7D0D89F3E7CB14C4A4657FD13752E1D24BABC566591DFD8DB4042CF",
+        "explorerUrl": "https://testnet.xrpl.org/transactions/62646F8BF7D0D89F3E7CB14C4A4657FD13752E1D24BABC566591DFD8DB4042CF",
+        "timestamp": "2026-04-19T04:04:07.309Z",
+        "cause": "Medical Supplies"
+      }
+    ],
+    [
+      "F2F69C7C4259FDC4CB31A5B20E153E013E233BF4252BA8594424C2DF26CD1526",
+      {
+        "type": "donation",
+        "donorName": "Bhumika ",
+        "fiatAmount": 10,
+        "fiatCurrency": "USD",
+        "rlusdAmount": 10,
+        "exchangeRate": 1,
+        "ngoBalance": 38733,
+        "txHash": "F2F69C7C4259FDC4CB31A5B20E153E013E233BF4252BA8594424C2DF26CD1526",
+        "explorerUrl": "https://testnet.xrpl.org/transactions/F2F69C7C4259FDC4CB31A5B20E153E013E233BF4252BA8594424C2DF26CD1526",
+        "timestamp": "2026-04-19T04:33:13.657Z",
+        "cause": "Kenya Relief Fund"
+      }
+    ]
+  ],
+  "activities": [
+    {
+      "id": "1776573304940",
+      "action": "Disbursement sent",
+      "detail": "$10 RLUSD → HID-0001-KE",
+      "time": "Just now"
+    },
+    {
+      "id": "1776573193730",
+      "action": "Donation received",
+      "detail": "$10 from Bhumika  → Kenya Relief Fund",
+      "time": "Just now"
+    },
+    {
+      "id": "1776571447376",
+      "action": "Donation received",
+      "detail": "$150 from Jane Smith → Medical Supplies",
+      "time": "Just now"
+    },
+    {
+      "id": "1776571440262",
+      "action": "Donation received",
+      "detail": "$2500 from Oxfam Partnership → Kenya Relief Fund",
+      "time": "Just now"
+    },
+    {
+      "id": "1776571433181",
+      "action": "Donation received",
+      "detail": "$5000 from UNHCR Grant → Global Relief",
+      "time": "Just now"
+    }
+  ]
+}
