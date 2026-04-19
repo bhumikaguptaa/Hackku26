@@ -1,0 +1,76 @@
+{
+  "savedAt": "2026-04-19T01:25:56.249Z",
+  "server": "http://localhost:3001",
+  "ngo": {
+    "address": "ra8tVJYNy6r1uyCdiiockr8Y2EgeZvXH3c",
+    "balance": 17878
+  },
+  "recipients": [
+    {
+      "hid": "HID-0001-KE",
+      "name": "Amina Osei",
+      "phone": "+254700100001",
+      "address": "rKjqeHnukfRDwGjsbeSTFz3oJcF6XXqdaV",
+      "seed": "sEd7dqj3kXncxStbtMpGjPf7WCTPchJ",
+      "balance": 450
+    },
+    {
+      "hid": "HID-0002-KE",
+      "name": "Joseph Kamau",
+      "phone": "+254700100002",
+      "address": "rH5KfnQUR4U7yTqzjEDCQShMXzRrFnvSy7",
+      "seed": "sEdT7F7wD3h1pFWAMzKcvRYuFx1uyV2",
+      "balance": 400
+    },
+    {
+      "hid": "HID-0003-KE",
+      "name": "Fatima Hassan",
+      "phone": "+254700100003",
+      "address": "rnYLqZ5z3idVs1fAphwFkij1qzhnzzqyXE",
+      "seed": "sEdVkgz8FQjwGzFRki4MyeQsZfPcDtJ",
+      "balance": 200
+    },
+    {
+      "hid": "HID-0004-KE",
+      "name": "David Ochieng",
+      "phone": "+254700100004",
+      "address": "raLe52F5VYSzJ3seaRQ7RJ1TnU5oUg1wwN",
+      "seed": "sEdTvUN5zFESb6hP8BaJ4dkQ7TGU3HL",
+      "balance": 150
+    },
+    {
+      "hid": "HID-0005-KE",
+      "name": "Grace Wanjiku",
+      "phone": "+254700100005",
+      "address": "rwCaYsfLEmcVo1LEmQgpvJxiW1EBdcb35M",
+      "seed": "sEdSRYvWmSNdfoz4LCDZADL7qMqosns",
+      "balance": 300
+    }
+  ],
+  "donations": [
+    {
+      "donorName": "UNHCR Grant",
+      "fiatAmount": 5000,
+      "fiatCurrency": "USD",
+      "rlusdAmount": 5000
+    },
+    {
+      "donorName": "Jane Smith (London)",
+      "fiatAmount": 200,
+      "fiatCurrency": "GBP",
+      "rlusdAmount": 252
+    },
+    {
+      "donorName": "Oxfam Partnership",
+      "fiatAmount": 3000,
+      "fiatCurrency": "EUR",
+      "rlusdAmount": 3240
+    },
+    {
+      "donorName": "GoFundMe Campaign",
+      "fiatAmount": 1500,
+      "fiatCurrency": "USD",
+      "rlusdAmount": 1500
+    }
+  ]
+}
